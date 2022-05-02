@@ -127,13 +127,13 @@ window.addEventListener( 'click', onPointerMove );
 			})
 		
 		
-			const controls = new OrbitControls( camera, renderer.domElement );
+			/*const controls = new OrbitControls( camera, renderer.domElement );
 		
 			controls.target.set( 0, 0.5, 0 );
 			controls.update();
 			controls.enablePan =false;
 			controls.enableDamping = true;
-	
+	*/
 			var sky_texture=new THREE.TextureLoader().load("../wallpapers/wallpaper.jpg")
 			scene.background=sky_texture
 			const light = new THREE.HemisphereLight( 0xffffff, 0x000000, 2 );
