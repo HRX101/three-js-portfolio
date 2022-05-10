@@ -10,10 +10,22 @@
 				position:absolute;
 				color:white;
 			}
+			#welcome{
+				color:red;
+				font-weight:bold;
+
+				padding-bottom:10px;
+				border-radius: 14px 5px;
+				box-shadow: 0 2px 2px black;
+				width:fit-content;
+				text-shadow:2px 2px black;
+				background-color:white;
+				opacity:0.8;
+			}
 		</style>
 	</head>
 	<body>
-		<h1>Welcome</h1>
+		<h1><br><span id="welcome">Welcome</span></h1>
 		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 		<script type="importmap">
 			{
@@ -25,24 +37,56 @@
 		<script type="module">
 					import * as THREE from 'three';
 					import Stats from './modules/stats.module.js';
-					import { DRACOLoader } from './modules/DRACOLoader.js';
 					import { GLTFLoader } from './modules/GLTFLoader.js';
 					import { OrbitControls } from './modules/OrbitControls.js';
+					import { FontLoader } from './modules/FontLoader.js';
+					import { TextGeometry } from './modules/TextGeometry.js';
+		
+
+					
+					var x,y,z;
+					x=10
+					y=10
+					z=3
+					var x1
+					var c=0
 			const scene= new THREE.Scene()
+			const textureLoader1 = new THREE.TextureLoader();
 			const raycaster=new THREE.Raycaster()
 			const pointer=new THREE.Vector2()
+			//set the cube
+			const cube_geometry = new THREE.BoxGeometry( 2, 2, 2 );
+			const cube_material = new THREE.MeshPhongMaterial( {
+				color:0xC0C0C0,
+				shininess:100,
+				emissive:0xa9a7a7,
+				specular:0xffffff,
+				flatShading:true,
+				fog:true,
+				reflectivity:1,
+				combine:THREE.AddOperation
+
+			} );
+			
+			const cube = new THREE.Mesh( cube_geometry, cube_material);
+			cube.scale.set(0.5,0.5,0.5)
+			cube.rotation.x=2.4
+			cube.position.set(4,4.8,4)
+			scene.add(cube)
+
+		
+
 			function audio_aud(ad){
 				const listener = new THREE.AudioListener();
-camera.add( listener );
-
-// create a global audio source
-const sound = new THREE.Audio( listener );
+				camera.add( listener );
+				// create a global audio source
+				const sound = new THREE.Audio( listener );
 
 // load a sound and set it as the Audio object's buffer
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load( ad, function( buffer ) {
-	sound.setBuffer( buffer );
-	sound.setLoop( true );
+				const audioLoader = new THREE.AudioLoader();
+				audioLoader.load( ad, function( buffer ) {
+				sound.setBuffer( buffer );
+				sound.setLoop( true );
 	sound.setVolume( 0.5 );
 	sound.play();
 });
@@ -69,7 +113,7 @@ audioLoader.load( ad, function( buffer ) {
 // (-1 to +1) for both components
 pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-console.log(pointer.x)
+//console.log(pointer.x)
 render()
 }
 window.addEventListener( 'click', onPointerMove );
@@ -77,20 +121,22 @@ window.addEventListener( 'click', onPointerMove );
 			const renderer = new THREE.WebGLRenderer();
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
-			const dracoLoader = new DRACOLoader();
-			dracoLoader.setDecoderPath( 'node_modules/three/examples/js/libs/draco/gltf/' );
+			
 			var loader =new GLTFLoader()
-			var loader1=new GLTFLoader()
+			
 			var loader2=new GLTFLoader()
-			loader.setDRACOLoader( dracoLoader );
+			var loader3=new GLTFLoader()
+			var loader4=new GLTFLoader()
 			var obj;
-			var obj1;
 			var obj2;
 			var ad;
+			//object loading
 			loader.load("./house/scene.gltf",function(gltf){
 				obj=gltf.scene
+				obj.scale.set(0.3,0.3,0.3)
 				scene.add(gltf.scene)
-				
+				var txt="Hrithik's house"
+				font_write(txt)
 				animate();
 			},function(xhr){
 				console.log((xhr.loaded/xhr.total)*100)
@@ -98,47 +144,99 @@ window.addEventListener( 'click', onPointerMove );
 				console.log(error)
 			}
 			);
+
 			let mixer;
 			const stats = new Stats();
 			const clock = new THREE.Clock();
+			x1=camera.position
+			
 			loader2.load("./astranaut/scene.gltf",function(gltf){
 				obj2=gltf.scene
 
-				obj2.position.set(6,2,28)
+				obj2.position.set(1,2,7)
+				
+				//obj2.position.copy(6,2,28).add(new THREE.Vector3(x,y,z))
 				scene.add(gltf.scene)
 				obj2.rotation.y=90
-				obj2.scale.set(3,3,3)
+				
+				obj2.scale.set(0.5,0.5,0.5)
+			
 				mixer = new THREE.AnimationMixer( obj2 );
 				mixer.clipAction( gltf.animations[ 0 ] ).play();
 				animate2();
-			})
-			
-			loader1.setDRACOLoader(dracoLoader)
-			loader1.load("./non-texture/scene.gltf",function(gltf){
-				obj1=gltf.scene
-				obj1.position.set(0,-2,10)
-				scene.add(gltf.scene)
-				mixer = new THREE.AnimationMixer( obj1);
-				mixer.clipAction( gltf.animations[ 0 ] ).play();
-				animate1();
 				
+			})
+			var obj3;
+			//furniture_model load
+			loader4.load("./furniture1/scene.gltf",function(gltf){
+				obj3=gltf.scene
+				obj3.position.set(-3,0,0)
+				obj3.scale.set(20,20,20)
+				scene.add(gltf.scene)
+			},function(xhr){
+				console.log((xhr.loaded/xhr.total)*100)
 			},function(error){
 				console.log(error)
 			})
-		
+			
+			//pets loading
+			var mixer1;
+			let obj4;
+			var loader5=new GLTFLoader()
+			loader5.load("./pets/scene.gltf",function(gltf){
+				obj4=gltf.scene
+				obj4.scale.set(1,1,1)
+				obj4.position.set(-3,0.52,2)
+				scene.add(gltf.scene)
+				mixer1 = new THREE.AnimationMixer( obj4 );
+				mixer1.clipAction( gltf.animations[ 0 ] ).play();
+				animate3()
+				
+			})
+			//console.log(obj4)
+
+	
 		
 			const controls = new OrbitControls( camera, renderer.domElement );
 		
-			controls.target.set( 0, 0.5, 0 );
+			controls.target.set( 0.5, 0.5, 0.5 );
+			
 			controls.update();
 			controls.enablePan =false;
 			controls.enableDamping = true;
+			
 	
-			var sky_texture=new THREE.TextureLoader().load("./wallpapers/wallpaper.jpg")
-			scene.background=sky_texture
-			const light = new THREE.HemisphereLight( 0xffffff, 0x000000, 2 );
+			
+			const light = new THREE.HemisphereLight( 0x000000, 0x000000, 2 );
 			scene.add(light);
-			camera.position.set(0,10,32);
+			camera.position.set(x,y,z);
+			
+			document.addEventListener("keydown",move_cam)
+			function move_cam(){
+				var keyCode = event.which;
+    if (keyCode == 87) {
+        camera.translateZ(-0.7);
+		controls.update();
+    } else if (keyCode == 83) {
+        camera.translateZ(0.7);
+		controls.update();
+    } else if (keyCode == 65) {
+        camera.translateX(-0.7)
+		controls.update();
+    } else if (keyCode == 68) {
+        camera.translateX(0.7);
+		controls.update();
+    } else if (keyCode == 32) {
+        camera.position.set(0, 0, 0);
+    }
+			}
+			animate_cube()
+			//animation of objects
+			function animate_cube(){
+				requestAnimationFrame(animate_cube)
+				cube.rotation.x+=0.01
+				renderer.render(scene,camera)
+			}
 			function animate() {
 				
 				requestAnimationFrame( animate );
@@ -147,24 +245,32 @@ window.addEventListener( 'click', onPointerMove );
 				renderer.render( scene, camera );
 				
 			}
-			//var texture=new THREE.TextureLoader("img.jpg")
-		
-			
-			function animate1(){
+			function animate3() {
 				
-				requestAnimationFrame( animate1 );
-
+				requestAnimationFrame( animate3 );
+				
 				const delta = clock.getDelta();
-				mixer.update( delta );
+				obj4.lookAt(camera.position)
+				mixer1.update( delta );
 				controls.update();
 				stats.update();
+				renderer.render( scene, camera );
+			
+				
+			}
+			
+			//var texture=new THREE.TextureLoader("img.jpg")
+		
+			function planet_animation(planet_object){
+				requestAnimationFrame(planet_animation)
+				sphere_1.rotation.y+=0.003
+				
 				
 				renderer.render( scene, camera );
-				
 			}
 			function animate2(){
 				requestAnimationFrame( animate2 );
-				
+				obj2.lookAt(camera.position)
 				const delta = clock.getDelta();
 			mixer.update( delta );
 				controls.update();
@@ -172,32 +278,157 @@ window.addEventListener( 'click', onPointerMove );
 				renderer.render( scene, camera );
 			}
 			
+			//onresize 
 			window.onresize=function(){
 				camera.aspect=window.innerWidth/window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize(window.innerWidth,window.innerHeight);
 			};
+			//clicking objects
 			function render(){
 				raycaster.setFromCamera( pointer, camera );
 
 	// calculate objects intersecting the picking ray
-	const intersects = raycaster.intersectObjects(scene.children);
-	
-	if(intersects.length==3){
+	const intersects = raycaster.intersectObjects(scene.children,false);
+	//console.log(intersects[0])
+
+	if(intersects.length>0){
+		const intersect=intersects[0]
 		
-		window.open("http://google.com")
+		if(intersect.object===cube){
+			document.getElementById("welcome").innerText="Hrithik: "+"thank you for turn on lights "
+			var spotlight1=new THREE.SpotLight(0xffffff)
+			setTimeout(erase_message,5000)
+			spotlight1.target.position.set(obj.position.x-10,obj.position.y+5,obj.position.z)
+			scene.add(spotlight1)
+			scene.add(spotlight1.target)
+		}
+		if(intersect.object===sphere_1){
+			console.log("hi")
+		}
+		if(intersect.object===cube1_mesh){
+			if(c===0){
+			animate_book()}
+			else{
+				document.getElementById("welcome").innerText="Hi there it's me Hrithik Paul . \nThe developer and programmer . \nI made some cool stuffs and projects for my people . \nI hope you'll like it .\n😊Thanks for visiting "
+				setTimeout(erase_message,5000)
+				c=-1
+				
+			}
+		}
 	}
+	/*
 	if(intersects.length==0){
-				ad="./sound/welcome.ogg"
+				ad="../sound/welcome.ogg"
 				//audio_aud(ad)
 				with_out_loop_audio(ad)
-			}
+			}*/
 			}
 		
 
 			
-			ad="./sound/space.ogg"
-			audio_aud(ad)
-		</script>
+		//	ad="../sound/space.ogg"
+		//	audio_aud(ad)
+
+		//font-loading work is done here
+		function font_write(txt){
+		var geometry_font;
+		const font1=new FontLoader()
+		font1.load("../fonts/font1.json",function(font){
+		
+			geometry_font=new TextGeometry(txt,{
+				font:font,
+				size:4,
+				height:2
+			})
+			const text_mesh=new THREE.Mesh(geometry_font,[
+				new THREE.MeshPhongMaterial({color:0xffffff}),
+				new THREE.MeshPhongMaterial({color:0x000000})
+			])
+			text_mesh.castShadow=true
+			text_mesh.position.set(-14,6,5)
+			text_mesh.rotation.y=190
+			
+			scene.add(text_mesh)
+			
+
+		})
+	}
+
+	
+
+    
+	//planet making
+	const planet_texture=new THREE.TextureLoader().load("./wallpapers/planet1.jpg")
+	const planet_1 = new THREE.SphereGeometry( 105, 224, 112 );
+	var v=1.0
+
+	
+	const planet_1_material = new THREE.MeshPhongMaterial( { map:planet_texture,shininess:80.7,fog:true,  color:0x909598,emissive:0x000000,displacementScale:0.2,specular:0x000000} );
+	const planet_1_mat=new THREE.Material({depthTest:true,depthWrite:true,side:THREE.FontSide,})
+	var amb=new THREE.AmbientLight(0xffffff)
+	const sphere_1 = new THREE.Mesh( planet_1, planet_1_material,planet_1_mat,amb );
+	sphere_1.position.set(130,20,10)
+	
+	scene.add( sphere_1);
+	console.log(sphere_1)
+	
+
+	planet_animation(sphere_1)
+	//lights 
+	var spotlight = new THREE.SpotLight(0xffffff);
+	spotlight.position.set(0,0,0);
+	spotlight.lookAt(sphere_1.position);
+	scene.add(spotlight);
+	//fog
+	const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.82);
+	
+	directionalLight.position.set(0,50,0)
+	directionalLight.target.position.set(sphere_1.position.x/10,0,0)
+	scene.add( directionalLight );
+	scene.add( directionalLight.target );
+	//cube placement
+	var cube1=new THREE.BoxGeometry(0.5,0.08,1)
+	var book_texture=new THREE.TextureLoader().load("./wallpapers/books.jpg")
+	var cube1_material=new THREE.MeshPhongMaterial({map:book_texture,flatShading:true})
+	var cube1_mesh=new THREE.Mesh(cube1,cube1_material)
+	cube1_mesh.position.set(-3,1.27,0)
+
+
+	scene.add(cube1_mesh)
+	//animation of book
+	function animate_book()
+	{
+		requestAnimationFrame(animate_book)
+		cube1_mesh.rotation.y+=0.1
+		//console.log(cube1_mesh.rotation.y)
+		
+		//console.log(c)
+		c++
+		renderer.render(scene,camera)
+	}
+	//function for erase message
+	function erase_message(){
+		document.getElementById("welcome").innerText=""
+	}
+	
+	//project_cube
+	var pr=new THREE.BoxGeometry(10,1,5)
+	var pr_material=new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+	const pr_cube = new THREE.Mesh( pr, pr_material );
+	pr_cube.position.set(10,20,10)
+	pr_cube.rotation.z=30
+
+	scene.add( pr_cube );
+	
+
+	function animate_block(){
+		requestAnimationFrame(animate_block)
+		//pr_cube.setRotationFromAxisAngle(sphere_1.position,90)
+		//pr_cube.rotation.y=sphere_1.rotation.y
+		renderer.render(scene,camera)
+	}		
+	animate_block()
+	</script>
 	</body>
 </html>
